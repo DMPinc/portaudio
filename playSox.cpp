@@ -51,7 +51,7 @@ void PlaySox::play(){
     std::string cmd = PlaySox::PLAYCMD + playedSound->len;
     // set tone
     for(Tones::iterator it = playedSound->tones.begin(); it != playedSound->tones.end(); ++it){
-        if(*it == PlaySox::RESTTOKEN){ // rest case, wait for len
+        if(*it == Sound::RESTTOKEN){ // rest case, wait for len
             int rest = atof(playedSound->len.c_str()) * 1000000;
             std::stringstream ss;
             ss << rest;
@@ -77,7 +77,7 @@ void PlaySox::chooseSound(){
 
 // for test
 int main(){
-    std::string input = "18/C1,C2 1180/G1,G2";
+    std::string input = "180/C1,C2 1180/G1,G2";
     PlaySox ps = PlaySox(input);
     
     ps.play();
