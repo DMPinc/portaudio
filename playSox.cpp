@@ -34,6 +34,7 @@ Sound* PlaySox::parse(std::string soundStr){
         snd->tones.push_back(std::string(soundStr, current, found - current));
         current = found + 1;
     }
+//    std::cout << "tone = " << std::string(soundStr, current, soundStr.size() - current) << std::endl;
     snd->tones.push_back(std::string(soundStr, current, soundStr.size() - current));
     return snd;
 }
@@ -76,7 +77,8 @@ void PlaySox::chooseSound(){
 
 // for test
 int main(){
-    std::string input = "1800/C1,C2";
+    std::string input = "18/C1,C2 1180/G1,G2";
     PlaySox ps = PlaySox(input);
+    
     ps.play();
 }
