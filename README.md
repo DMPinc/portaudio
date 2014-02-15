@@ -5,4 +5,4 @@ Preparation
 
 Usage
 -----
-g++ portaudio-test.cpp portaudio/libportaudio.a -framework CoreAudio -framework AudioToolbox -framework AudioUnit -framework CoreServices
+g++ portaudio-test.cpp fftw/libfftw3.a portaudio/libportaudio.a -framework CoreAudio -framework AudioToolbox -framework AudioUnit -framework CoreServices
