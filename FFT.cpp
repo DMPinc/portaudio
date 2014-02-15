@@ -1,6 +1,5 @@
 #include "FFT.h"
 
-#define M_PI	3.141592654
 #define POW2(X)	(1<<(X))
 #define rint(X)	((int)(floor(X)+0.5))
 
@@ -184,10 +183,15 @@ void FFT::init_bpf_filter (int ch, int num, int sample_freq, int freq_low, int f
 
 void FFT::bpf_filter (int ch, short *data)
 {
+	printf("a");
+
 	double *xr1;
 	double *xi1;
 	double *xr2;
 	double *xi2;
+
+	printf("c");
+
 
 	int n2 = fft_num / 2;
 
@@ -206,10 +210,32 @@ void FFT::bpf_filter (int ch, short *data)
 	}
 	memset (di, 0, fft_num * sizeof (double));
 
+	printf("b¥n");
+
 	fft (dr, di, xr, xi, 0);
 	xr[0] = xi[0] = xr[n2] = xi[n2] = 0.0;
 
-	xr1 = &xr[1];
+	double max_power = 0.0;
+	for (int i = 0; i < n2; i++) {
+		if (xr1[i] > max_power) {
+			max_power = xr1[i];
+		}
+	}
+
+	for (double i = 1.0; i < 1000; i = i + 1.0) {
+		fft_num = pow(2.0, i);
+		if (fft_num > 480 * 2) {
+			break;
+		}
+	}
+
+	printf("a¥n");
+
+	double freq = max_power * (48000 / (double)fft_num);
+
+	printf("%f\n", freq);
+
+/*	xr1 = &xr[1];
 	xi1 = &xi[1];
 	xr2 = &xr[fft_num-1];
 	xi2 = &xi[fft_num-1];
@@ -240,5 +266,5 @@ void FFT::bpf_filter (int ch, short *data)
 
 	for (int i = 0; i < frame_size; i++) {
 		data[i] = out_data[i];
-	}
+	}*/
 }
