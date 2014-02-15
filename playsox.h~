@@ -1,6 +1,3 @@
-#ifndef PLAYSOX
-#define PLAYSOX
-
 #include <string>
 #include <vector>
 #include <map>
@@ -29,5 +26,3 @@ class PlaySox{
         void play();
         Sound* getPlayedSound();
 };
-
-#endif
