@@ -21,24 +21,28 @@ int CallBack(const void *input, void *output, unsigned long frameCount, const Pa
 //        printf("%i", in[i]);
     }
 
-    fft_in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * fft_num);
+//    fft_in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * fft_num);
     fft_out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * fft_num);
+    double double_in[fft_num];
     
     for (int i = 0; i < fft_num; i++) {
-        if (i < (int)frameCount) {
-            fft_in[i][0] = (double)in[i];
+        if (i < (int)frameCount / 2) {
+//            fft_in[i][0] = (double)in[i];
+            double_in[i] = (double)in[i * 2];
         } else {
-            fft_in[i][0] = 0.0;
+//            fft_in[i][0] = 0.0;
+            double_in[i] = 0.0;
         }
-        fft_in[i][1] = 0.0;
+//        fft_in[i][1] = 0.0;
     }
 
-    p = fftw_plan_dft_1d(fft_num, fft_in, fft_out, FFTW_FORWARD, FFTW_ESTIMATE); 
+//    p = fftw_plan_dft_1d(fft_num, fft_in, fft_out, FFTW_FORWARD, FFTW_ESTIMATE); 
+    p = fftw_plan_dft_r2c_1d(fft_num, double_in, fft_out, FFTW_ESTIMATE); 
     fftw_execute(p);
 
     double max_power = 0.0;
     int max_idx = 0;
-    for (int i = 1; i < fft_num / 2; i++) {
+    for (int i = 0; i < fft_num / 2; i++) {
         double s = fft_out[i][0] * fft_out[i][0] + fft_out[i][1] * fft_out[i][1];
         if (s > max_power) {
             max_power = s;
@@ -111,14 +115,14 @@ int main(int argc, char *argv[])
     Pa_Initialize();
 
     PaStreamParameters in_param;
-    in_param.channelCount = 1;
+    in_param.channelCount = 2;
     in_param.device = InDeviceId;
     in_param.hostApiSpecificStreamInfo = NULL;
     in_param.sampleFormat = paInt16;    
     in_param.suggestedLatency = Pa_GetDeviceInfo(in_param.device)->defaultLowInputLatency;
 
     PaStreamParameters out_param;
-    out_param.channelCount = 1;
+    out_param.channelCount = 2;
     out_param.device = OutDeviceId;
     out_param.hostApiSpecificStreamInfo = NULL;
     out_param.sampleFormat = paInt16;
