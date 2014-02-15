@@ -76,9 +76,9 @@ void PlaySox::chooseSound(){
 
 
 // for test
-int main(){
+/*int main(){
     std::string input = "18/C1,C2 1180/G1,G2";
     PlaySox ps = PlaySox(input);
     
     ps.play();
-}
+}*/

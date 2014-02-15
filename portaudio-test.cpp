@@ -3,12 +3,17 @@
 #include <math.h>
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <fftw3.h>
+#include <err.h>
 //#include "fftw/fftw3.h"
 #include "portaudio/portaudio.h"
 
+#include "playSox.h"
+
 #pragma comment(lib, "libportaudio.2.dylib")
 
+FILE *file_p;
 int fft_num;
 fftw_plan p;
 fftw_complex *fft_in, *fft_out;
@@ -23,7 +28,8 @@ int CallBack(const void *input, void *output, unsigned long frameCount, const Pa
     short *out = (short *)output;
 
     for (int i = 0; i < frameCount; i++) {
-        *out++ = *in++;
+//        *out++ = *in++;
+        *out++ = 0;
     }
 
     fft_out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * fft_num);
@@ -67,9 +73,33 @@ int CallBack(const void *input, void *output, unsigned long frameCount, const Pa
 //    printf("%.0lf:", freq);
 //    std::cout << current_midi_key << ", ";
 
-    if (prev_midi_key != current_midi_key) {
+    if (prev_midi_key == "C-1" || prev_midi_key == "") {
+        prev_midi_key = current_midi_key;
+        sound_length = 0;
+    } else if (prev_midi_key != current_midi_key) {
 //        std::cout << std::endl << std::endl << prev_midi_key << ":" << sound_length << "ms, " << std::endl;
-        std::cout << std::endl << std::endl << sound_length << "/" << prev_midi_key << std::endl;
+        if (sound_length != 0) {
+            std::cout << std::endl << std::endl << sound_length << "/" << prev_midi_key << std::endl;
+            std::stringstream ss;
+            ss << sound_length;
+            std::string output = "./soxclient '" + ss.str() + "/" + prev_midi_key + "'";
+
+            int BUF = 256;
+            char buf[BUF];
+            if ((file_p = popen(output.c_str(), "r")) == NULL) {
+                err(EXIT_FAILURE, "%s", output.c_str());
+            }
+            while (fgets(buf, BUF, file_p) != NULL) {
+                (void) fputs(buf, stdout);
+            }
+            if (strlen(buf) >= 4) {
+                std::cout << "|||" << buf << "|||" << std::endl;
+                PlaySox ps = PlaySox(buf);
+                ps.play();
+            }
+
+//            popen(output.c_str(), "r");
+        }
         prev_midi_key = current_midi_key;
         sound_length = 0;
     } else {
@@ -123,12 +153,12 @@ void loadMidiHzTxt() {
 
         std::string midi_key = token;
         midi_keys[idx] = midi_key;
-        std::cout << midi_key << std::endl;
+//        std::cout << midi_key << std::endl;
 
         token = strtok( NULL, "," );
         double freq = atof(token);
         midi_freqs[idx] = freq;
-        printf("%f\n", freq);
+//        printf("%f\n", freq);
 
         idx++;
     }
@@ -137,6 +167,8 @@ void loadMidiHzTxt() {
 
 int main(int argc, char *argv[])
 {
+    system("./soxclient '80/C#5 40/C6'");
+
     if (argc < 3) {
         displayOption();
         exit(0);
@@ -188,4 +220,7 @@ int main(int argc, char *argv[])
     fftw_destroy_plan(p);
     fftw_free(fft_in); 
     fftw_free(fft_out);
+
+    (void) pclose(file_p);
+
 }
