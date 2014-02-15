@@ -1,4 +1,4 @@
-Prepare
+Preparation
 -----
 * brew install portaudio
 * brew install fftw
