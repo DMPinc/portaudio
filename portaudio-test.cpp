@@ -64,11 +64,12 @@ int CallBack(const void *input, void *output, unsigned long frameCount, const Pa
 
     std::string current_midi_key = midi_keys[min_idx];
 
-    printf("%.0lf:", freq);
-    std::cout << current_midi_key << ", ";
+//    printf("%.0lf:", freq);
+//    std::cout << current_midi_key << ", ";
 
     if (prev_midi_key != current_midi_key) {
-        std::cout << std::endl << std::endl << current_midi_key << ":" << sound_length << "ms, " << std::endl;
+//        std::cout << std::endl << std::endl << prev_midi_key << ":" << sound_length << "ms, " << std::endl;
+        std::cout << std::endl << std::endl << sound_length << "/" << prev_midi_key << std::endl;
         prev_midi_key = current_midi_key;
         sound_length = 0;
     } else {
