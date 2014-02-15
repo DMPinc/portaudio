@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string>
+#include <iostream>
 #include <fftw3.h>
 //#include "fftw/fftw3.h"
 #include "portaudio/portaudio.h"
@@ -10,6 +12,10 @@
 int fft_num;
 fftw_plan p;
 fftw_complex *fft_in, *fft_out;
+std::string midi_keys[128];
+double midi_freqs[128];
+std::string prev_midi_key;
+int sound_length = 0;
 
 int CallBack(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData)
 {
@@ -18,25 +24,19 @@ int CallBack(const void *input, void *output, unsigned long frameCount, const Pa
 
     for (int i = 0; i < frameCount; i++) {
         *out++ = *in++;
-//        printf("%i", in[i]);
     }
 
-//    fft_in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * fft_num);
     fft_out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * fft_num);
     double double_in[fft_num];
     
     for (int i = 0; i < fft_num; i++) {
-        if (i < (int)frameCount / 2) {
-//            fft_in[i][0] = (double)in[i];
-            double_in[i] = (double)in[i * 2];
+        if (i < (int)frameCount) {
+            double_in[i] = (double)in[i];
         } else {
-//            fft_in[i][0] = 0.0;
             double_in[i] = 0.0;
         }
-//        fft_in[i][1] = 0.0;
     }
 
-//    p = fftw_plan_dft_1d(fft_num, fft_in, fft_out, FFTW_FORWARD, FFTW_ESTIMATE); 
     p = fftw_plan_dft_r2c_1d(fft_num, double_in, fft_out, FFTW_ESTIMATE); 
     fftw_execute(p);
 
@@ -52,11 +52,28 @@ int CallBack(const void *input, void *output, unsigned long frameCount, const Pa
 
     double freq = (44100 / (double)fft_num) * max_idx;
 
-//    double freq = max_idx * (48000 / (double)fft_num);
-//    double freq = max_idx / (double)fft_num * 48000;
+    double min_distance = 1000.0;
+    int min_idx = 0;
+    for (int i = 0; i < 128; i++) {
+        double distance = (midi_freqs[i] - freq) * (midi_freqs[i] - freq);
+        if (distance < min_distance) {
+            min_distance = distance;
+            min_idx = i;
+        }
+    }
 
-    printf("%.0lf, ", freq);
-//    printf("0");
+    std::string current_midi_key = midi_keys[min_idx];
+
+    printf("%.0lf:", freq);
+    std::cout << current_midi_key << ", ";
+
+    if (prev_midi_key != current_midi_key) {
+        std::cout << std::endl << std::endl << current_midi_key << ":" << sound_length << "ms, " << std::endl;
+        prev_midi_key = current_midi_key;
+        sound_length = 0;
+    } else {
+        sound_length += 20;
+    }
     
     return (int)paContinue;
 }
@@ -92,6 +109,31 @@ void displayOption()
     Pa_Terminate();
 }
 
+void loadMidiHzTxt() {
+    char str[50];
+    char *token;
+
+    FILE *fp;
+    fp = fopen("midi-Hz.txt", "r");
+    int idx = 0;
+    while (fgets(str, 50, fp) != NULL) {
+        str[strlen(str) - 1] = '\0';
+        token = strtok(str, " " );
+
+        std::string midi_key = token;
+        midi_keys[idx] = midi_key;
+        std::cout << midi_key << std::endl;
+
+        token = strtok( NULL, "," );
+        double freq = atof(token);
+        midi_freqs[idx] = freq;
+        printf("%f\n", freq);
+
+        idx++;
+    }
+    fclose(fp);
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 3) {
@@ -99,12 +141,15 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
+    loadMidiHzTxt();
+
     int InDeviceId = atoi(argv[1]);
     int OutDeviceId = atoi(argv[2]);
 
     const int SamplingRate = 44100;
     const int BufLength = SamplingRate / 50;
 
+    // FFT用に2のべき乗を計算する
     for (double i = 1.0; i < 1000; i = i + 1.0) {
         fft_num = pow(2.0, i);
         if (fft_num > BufLength * 2) {
