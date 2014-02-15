@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
     in_param.suggestedLatency = Pa_GetDeviceInfo(in_param.device)->defaultLowInputLatency;
 
     PaStreamParameters out_param;
-    out_param.channelCount = 2;
+    out_param.channelCount = 1;
     out_param.device = OutDeviceId;
     out_param.hostApiSpecificStreamInfo = NULL;
     out_param.sampleFormat = paInt16;
