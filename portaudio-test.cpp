@@ -83,15 +83,21 @@ int CallBack(const void *input, void *output, unsigned long frameCount, const Pa
         sound_length = 0;
     } else if (prev_midi_key != current_midi_key) {
 //        std::cout << std::endl << std::endl << prev_midi_key << ":" << sound_length << "ms, " << std::endl;
-        if (sound_length > 50) {
+        if (sound_length >= 50) {
             std::cout << std::endl << std::endl << sound_length << "/" << prev_midi_key << std::endl;
             std::stringstream ss;
             ss << sound_length;
-            std::string output = "./soxclient '" + ss.str() + "/" + prev_midi_key + " " + prev_output + "'";
-            prev_output = ss.str() + "/" + prev_midi_key;
+//            std::string output = "./soxclient '" + ss.str() + "/" + prev_midi_key + " " + prev_output + "'";
+//            prev_output = ss.str() + "/" + prev_midi_key;
+//            std::string output = "./soxclient '50/" + prev_midi_key + prev_output + "'";
+            std::string output = "./soxclient '50/" + prev_midi_key + " " + prev_output + "'";
+            prev_output = "50/" + prev_midi_key;
 
             int BUF = 256;
             char buf[BUF];
+            std::string hoge = output.c_str();
+            if (hoge != "./soxclient '50/C2 50/C3'") {
+            std::cout << "zzz" << output.c_str() << std::endl;
             if ((file_p = popen(output.c_str(), "r")) == NULL) {
                 err(EXIT_FAILURE, "%s", output.c_str());
             }
@@ -102,12 +108,15 @@ int CallBack(const void *input, void *output, unsigned long frameCount, const Pa
                 std::string str = buf;
                 str.pop_back();
                 std::cout << "|||" << str << "|||" << std::endl;
-                PlaySox ps = PlaySox(str);
-                if (sound != NULL && prev_sound != NULL) {
-                    ps.play(sound);
+                if (str != "20/S") {
+                    PlaySox ps = PlaySox(str);
+                    if (sound != NULL && prev_sound != NULL) {
+                        ps.play(sound);
+                    }
+                    sound = prev_sound;
+                    prev_sound = ps.chooseSound();
                 }
-                sound = prev_sound;
-                prev_sound = ps.chooseSound();
+            }
             }
         }
         prev_midi_key = current_midi_key;
@@ -177,7 +186,7 @@ void loadMidiHzTxt() {
 
 int main(int argc, char *argv[])
 {
-    system("./soxclient '80/C#5 40/C6'");
+//    system("./soxclient '80/C#5 40/C6'");
 
     if (argc < 3) {
         displayOption();

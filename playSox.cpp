@@ -66,14 +66,14 @@ void PlaySox::play(Sound *sound){
     cmd += " &";
     
     // call cmd
-    std::cout << "play cmd = " << cmd << " &" << std::endl;
+    std::cout << "play cmd = " << cmd << std::endl;
     system(cmd.c_str());
 //    popen(cmd.c_str(), "r");
 }
 
 Sound* PlaySox::chooseSound(){
     int i = rand() % sounds.size();
-    playedSound = sounds[i];
+    playedSound = sounds[0];
     return playedSound;
 }
 
