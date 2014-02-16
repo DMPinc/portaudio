@@ -43,16 +43,16 @@ Sound* PlaySox::getPlayedSound(){
     return playedSound;
 }
 
-void PlaySox::play(){
-    if(playedSound == NULL){
-        playedSound = *sounds.begin();
-    }
+void PlaySox::play(Sound *sound){
+/*    if(sound == NULL){
+        sound = *sounds.begin();
+    }*/
     // set len
-    std::string cmd = PlaySox::PLAYCMD + playedSound->len;
+    std::string cmd = PlaySox::PLAYCMD + sound->len;
     // set tone
-    for(Tones::iterator it = playedSound->tones.begin(); it != playedSound->tones.end(); ++it){
+    for(Tones::iterator it = sound->tones.begin(); it != sound->tones.end(); ++it){
         if(*it == PlaySox::RESTTOKEN){ // rest case, wait for len
-            int rest = atof(playedSound->len.c_str()) * 1000000;
+            int rest = atof(sound->len.c_str()) * 1000000;
             std::stringstream ss;
             ss << rest;
             // reset play cmd and and set usleep
@@ -63,15 +63,18 @@ void PlaySox::play(){
             cmd += PlaySox::PLOPT + *it;
         }
     }
+    cmd += " &";
     
     // call cmd
-    std::cout << "play cmd = " << cmd << std::endl;
+    std::cout << "play cmd = " << cmd << " &" << std::endl;
     system(cmd.c_str());
+//    popen(cmd.c_str(), "r");
 }
 
-void PlaySox::chooseSound(){
-    int i = rand() % sounds.size() + 1;
+Sound* PlaySox::chooseSound(){
+    int i = rand() % sounds.size();
     playedSound = sounds[i];
+    return playedSound;
 }
 
 

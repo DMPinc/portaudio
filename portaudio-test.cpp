@@ -6,6 +6,8 @@
 #include <sstream>
 #include <fftw3.h>
 #include <err.h>
+#include <signal.h>
+#include <unistd.h>
 //#include "fftw/fftw3.h"
 #include "portaudio/portaudio.h"
 
@@ -21,6 +23,9 @@ std::string midi_keys[128];
 double midi_freqs[128];
 std::string prev_midi_key;
 int sound_length = 0;
+std::string prev_output;
+Sound *prev_sound;
+Sound *sound;
 
 int CallBack(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData)
 {
@@ -28,8 +33,8 @@ int CallBack(const void *input, void *output, unsigned long frameCount, const Pa
     short *out = (short *)output;
 
     for (int i = 0; i < frameCount; i++) {
-//        *out++ = *in++;
-        *out++ = 0;
+        *out++ = *in++;
+//        *out++ = 0;
     }
 
     fft_out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * fft_num);
@@ -78,11 +83,12 @@ int CallBack(const void *input, void *output, unsigned long frameCount, const Pa
         sound_length = 0;
     } else if (prev_midi_key != current_midi_key) {
 //        std::cout << std::endl << std::endl << prev_midi_key << ":" << sound_length << "ms, " << std::endl;
-        if (sound_length != 0) {
+        if (sound_length > 50) {
             std::cout << std::endl << std::endl << sound_length << "/" << prev_midi_key << std::endl;
             std::stringstream ss;
             ss << sound_length;
-            std::string output = "./soxclient '" + ss.str() + "/" + prev_midi_key + "'";
+            std::string output = "./soxclient '" + ss.str() + "/" + prev_midi_key + " " + prev_output + "'";
+            prev_output = ss.str() + "/" + prev_midi_key;
 
             int BUF = 256;
             char buf[BUF];
@@ -93,12 +99,16 @@ int CallBack(const void *input, void *output, unsigned long frameCount, const Pa
                 (void) fputs(buf, stdout);
             }
             if (strlen(buf) >= 4) {
-                std::cout << "|||" << buf << "|||" << std::endl;
-                PlaySox ps = PlaySox(buf);
-                ps.play();
+                std::string str = buf;
+                str.pop_back();
+                std::cout << "|||" << str << "|||" << std::endl;
+                PlaySox ps = PlaySox(str);
+                if (sound != NULL && prev_sound != NULL) {
+                    ps.play(sound);
+                }
+                sound = prev_sound;
+                prev_sound = ps.chooseSound();
             }
-
-//            popen(output.c_str(), "r");
         }
         prev_midi_key = current_midi_key;
         sound_length = 0;

@@ -25,8 +25,8 @@ class PlaySox{
         Sounds sounds;
     public:
         PlaySox(std::string input);
-        void chooseSound();
-        void play();
+        Sound* chooseSound();
+        void play(Sound *sound);
         Sound* getPlayedSound();
 };
 
