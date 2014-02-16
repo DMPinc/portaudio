@@ -1,6 +1,6 @@
 #include "sound.h"
 
-Sound::Sound(std::string len) : RESTTOKEN = {
+Sound::Sound(std::string len){
     this->len = len;
 }
 
@@ -16,4 +16,4 @@ std::string Sound::toString(){
     return "\"" + str + "\"";
 }
 
-const std::string RESTTOKEN = "SP";
+const std::string Sound::RESTTOKEN = "SP";

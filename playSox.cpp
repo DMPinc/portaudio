@@ -79,6 +79,8 @@ void PlaySox::chooseSound(){
 int main(){
     std::string input = "180/C1,C2 1180/G1,G2";
     PlaySox ps = PlaySox(input);
-    
-    ps.play();
+    while(1){ 
+        ps.play();
+        system("sleep 1");
+    }
 }
